@@ -50,12 +50,34 @@ public class Device implements Serializable {
 
   @JsonProperty
   private int registrationId;
-
+ 
+  // added push properties for baidu service by wei.he begin
+  @JsonProperty
+  private long channelId;
+  
+  @JsonProperty
+  private String userId;
+  //added push properties for baidu service by wei.he end
+  
   public Device() {}
 
   public Device(long id, String authToken, String salt,
+          String signalingKey, String gcmId, String apnId,
+          boolean fetchesMessages, int registrationId)
+  {
+	this.id              = id;
+	this.authToken       = authToken;
+	this.salt            = salt;
+	this.signalingKey    = signalingKey;
+	this.gcmId           = gcmId;
+	this.apnId           = apnId;
+	this.fetchesMessages = fetchesMessages;
+	this.registrationId  = registrationId;
+  }
+  
+  public Device(long id, String authToken, String salt,
                 String signalingKey, String gcmId, String apnId,
-                boolean fetchesMessages, int registrationId)
+                boolean fetchesMessages, int registrationId, long channelId, String userId)
   {
     this.id              = id;
     this.authToken       = authToken;
@@ -65,6 +87,8 @@ public class Device implements Serializable {
     this.apnId           = apnId;
     this.fetchesMessages = fetchesMessages;
     this.registrationId  = registrationId;
+    this.channelId = channelId;
+    this.userId = userId;
   }
 
   public String getApnId() {
@@ -109,7 +133,8 @@ public class Device implements Serializable {
   }
 
   public boolean isActive() {
-    return fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId());
+	// added push properties for baidu service by wei.he
+    return fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId()) || (!Util.isEmpty(getChannelId()+"") && !Util.isEmpty(getUserId()));
   }
 
   public boolean getFetchesMessages() {
@@ -131,4 +156,22 @@ public class Device implements Serializable {
   public void setRegistrationId(int registrationId) {
     this.registrationId = registrationId;
   }
+  
+  //added push properties for baidu service by wei.he begin
+  public long getChannelId() {
+	  return channelId;
+  }
+  
+  public void setChannelId(long channelId) {
+	  this.channelId = channelId;
+  }
+  
+  public String getUserId() {
+	  return userId;
+  }
+  
+  public void setUserId(String userId) {
+	  this.userId = userId;
+  }
+  //added push properties for baidu service by wei.he end
 }

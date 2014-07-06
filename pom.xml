@@ -125,6 +125,11 @@
             <artifactId>postgresql</artifactId>
             <version>9.1-901.jdbc4</version>
         </dependency>
+    <dependency>
+      <groupId>com.baidu</groupId>
+      <artifactId>bccs</artifactId>
+      <version>1.1.2</version>
+    </dependency>
 
 
     </dependencies>
@@ -239,7 +244,7 @@
     <repositories>
         <repository>
             <id>gcm-server-repository</id>
-            <url>https://raw.github.com/whispersystems/maven/master/gcm-server/releases/</url>
+            <url>https://raw.githubusercontent.com/whispersystems/maven/master/gcm-server/releases/</url>
         </repository>
     </repositories>
 

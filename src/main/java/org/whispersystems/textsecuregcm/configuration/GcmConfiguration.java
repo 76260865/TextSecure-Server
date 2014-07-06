@@ -21,7 +21,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class GcmConfiguration {
 
-  @NotEmpty
   @JsonProperty
   private String apiKey;
 

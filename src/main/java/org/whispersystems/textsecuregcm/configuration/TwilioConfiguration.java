@@ -21,19 +21,15 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class TwilioConfiguration {
 
-  @NotEmpty
   @JsonProperty
   private String accountId;
 
-  @NotEmpty
   @JsonProperty
   private String accountToken;
 
-  @NotEmpty
   @JsonProperty
   private String number;
 
-  @NotEmpty
   @JsonProperty
   private String localDomain;
 

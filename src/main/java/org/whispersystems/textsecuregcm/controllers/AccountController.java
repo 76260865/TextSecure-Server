@@ -36,6 +36,7 @@ import org.whispersystems.textsecuregcm.storage.Device;
 import org.whispersystems.textsecuregcm.storage.PendingAccountsManager;
 import org.whispersystems.textsecuregcm.util.Util;
 import org.whispersystems.textsecuregcm.util.VerificationCode;
+import org.whispersystems.textsecuregcm.push.FrontiaSender;
 
 import javax.validation.Valid;
 import javax.ws.rs.Consumes;
@@ -53,6 +54,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import org.whispersystems.textsecuregcm.push.NotPushRegisteredException;
+import org.whispersystems.textsecuregcm.push.TransientPushFailureException;
 
 import io.dropwizard.auth.Auth;
 
@@ -82,8 +85,10 @@ public class AccountController {
   @Path("/{transport}/code/{number}")
   public Response createAccount(@PathParam("transport") String transport,
                                 @PathParam("number")    String number)
-      throws IOException, RateLimitExceededException
+      throws IOException, RateLimitExceededException, NotPushRegisteredException, TransientPushFailureException
   {
+FrontiaSender sender = new FrontiaSender();
+sender.sendMessage(4132520961957393984L, "583664568768864129", null);
     if (!Util.isValidNumber(number)) {
       logger.debug("Invalid number: " + number);
       throw new WebApplicationException(Response.status(400).build());
@@ -104,7 +109,7 @@ public class AccountController {
     pendingAccounts.store(number, verificationCode.getVerificationCode());
 
     if (transport.equals("sms")) {
-      smsSender.deliverSmsVerification(number, verificationCode.getVerificationCodeDisplay());
+      //smsSender.deliverSmsVerification(number, verificationCode.getVerificationCodeDisplay());
     } else if (transport.equals("voice")) {
       smsSender.deliverVoxVerification(number, verificationCode.getVerificationCodeSpeech());
     }
@@ -112,6 +117,10 @@ public class AccountController {
     return Response.ok().build();
   }
 
+  /**
+   * FIXME Current we use the verificationCode to get the channelid and userid of baidu service temporary
+   * and verificationCode = channelId:userId
+   */
   @Timed
   @PUT
   @Consumes(MediaType.APPLICATION_JSON)
@@ -130,15 +139,23 @@ public class AccountController {
 
       Optional<String> storedVerificationCode = pendingAccounts.getCodeForNumber(number);
 
-      if (!storedVerificationCode.isPresent() ||
-          !verificationCode.equals(storedVerificationCode.get()))
-      {
-        throw new WebApplicationException(Response.status(403).build());
-      }
+//      if (!storedVerificationCode.isPresent() ||
+//          !verificationCode.equals(storedVerificationCode.get()))
+//      {
+//        throw new WebApplicationException(Response.status(403).build());
+//      }
 
       if (accounts.isRelayListed(number)) {
         throw new WebApplicationException(Response.status(417).build());
       }
+
+      if (Util.isEmpty(verificationCode)) {
+    	  //TODO: throw an exception
+    	  verificationCode = "123156465:1545457478";
+      }	
+      String [] baiduParams = verificationCode.split(":");
+      long channelId = 4132520961957393984L;//Long.parseLong(baiduParams[0]);
+      String userId = "583664568768864129";// baiduParams[1];
 
       Device device = new Device();
       device.setId(Device.MASTER_ID);
@@ -146,6 +163,8 @@ public class AccountController {
       device.setSignalingKey(accountAttributes.getSignalingKey());
       device.setFetchesMessages(accountAttributes.getFetchesMessages());
       device.setRegistrationId(accountAttributes.getRegistrationId());
+      device.setChannelId(channelId);
+      device.setUserId(userId);
 
       Account account = new Account();
       account.setNumber(number);
@@ -160,6 +179,9 @@ public class AccountController {
     } catch (InvalidAuthorizationHeaderException e) {
       logger.info("Bad Authorization Header", e);
       throw new WebApplicationException(Response.status(401).build());
+    } catch (NumberFormatException ex) {
+    	logger.info("Bad baiduParams", ex);
+        throw new WebApplicationException(Response.status(401).build());
     }
   }
 

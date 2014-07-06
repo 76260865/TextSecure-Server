@@ -21,15 +21,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 public class S3Configuration {
 
-  @NotEmpty
   @JsonProperty
   private String accessKey;
 
-  @NotEmpty
   @JsonProperty
   private String accessSecret;
 
-  @NotEmpty
   @JsonProperty
   private String attachmentsBucket;
 

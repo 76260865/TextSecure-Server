@@ -43,6 +43,9 @@ public class PushSender {
   private final APNSender       apnSender;
   private final WebsocketSender webSocketSender;
 
+  // adde by wei.he for push message by baidu service
+  private final FrontiaSender mFrontiaSender;
+
   public PushSender(GcmConfiguration gcmConfiguration,
                     ApnConfiguration apnConfiguration,
                     StoredMessages   storedMessages,
@@ -56,6 +59,7 @@ public class PushSender {
     this.apnSender       = new APNSender(pubSubManager, storedMessages,
                                          apnConfiguration.getCertificate(),
                                          apnConfiguration.getKey());
+    mFrontiaSender = new FrontiaSender();
   }
 
   public void sendMessage(Account account, Device device, MessageProtos.OutgoingMessageSignal message)
@@ -77,6 +81,8 @@ public class PushSender {
     if      (device.getGcmId() != null)   sendGcmMessage(account, device, message);
     else if (device.getApnId() != null)   sendApnMessage(account, device, message);
     else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message);
+    // added by wei.he for sending messgae by baidu service
+    else if (device.getUserId() != null) sendFrontiaMessage(account, device, message);
     else                                  throw new NotPushRegisteredException("No delivery possible!");
   }
 
@@ -97,6 +103,15 @@ public class PushSender {
       accounts.update(account);
       throw new NotPushRegisteredException(e);
     }
+  }
+
+  /**
+  * add by wei.he for sending messgae by baidu service
+  */
+  private void sendFrontiaMessage(Account account, Device device, EncryptedOutgoingMessage outgoingMessage)
+      throws NotPushRegisteredException, TransientPushFailureException {
+      mFrontiaSender.sendMessage(device.getChannelId(), device.getUserId(), outgoingMessage);
+      //TODO need check if the user has registered the push service
   }
 
   private void sendApnMessage(Account account, Device device, EncryptedOutgoingMessage outgoingMessage)
