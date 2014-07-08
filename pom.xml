@@ -126,9 +126,9 @@
             <version>9.1-901.jdbc4</version>
         </dependency>
     <dependency>
-      <groupId>com.baidu</groupId>
-      <artifactId>bccs</artifactId>
-      <version>1.1.2</version>
+          <groupId>baidu</groupId>
+          <artifactId>bacc-api-lib</artifactId>
+          <version>1.1.2</version>
     </dependency>
 
 

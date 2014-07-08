@@ -87,8 +87,6 @@ public class AccountController {
                                 @PathParam("number")    String number)
       throws IOException, RateLimitExceededException, NotPushRegisteredException, TransientPushFailureException
   {
-FrontiaSender sender = new FrontiaSender();
-sender.sendMessage(4132520961957393984L, "583664568768864129", null);
     if (!Util.isValidNumber(number)) {
       logger.debug("Invalid number: " + number);
       throw new WebApplicationException(Response.status(400).build());
@@ -151,12 +149,13 @@ sender.sendMessage(4132520961957393984L, "583664568768864129", null);
 
       if (Util.isEmpty(verificationCode)) {
     	  //TODO: throw an exception
-    	  verificationCode = "123156465:1545457478";
-      }	
-      String [] baiduParams = verificationCode.split(":");
-      long channelId = 4132520961957393984L;//Long.parseLong(baiduParams[0]);
-      String userId = "583664568768864129";// baiduParams[1];
+    	  //verificationCode = "123156465:1545457478";
+    	  throw new WebApplicationException(Response.status(403).build());
+      }
 
+      String [] baiduParams = verificationCode.split(":");
+      String userId = baiduParams[0];
+      long channelId = Long.parseLong(baiduParams[1]);
       Device device = new Device();
       device.setId(Device.MASTER_ID);
       device.setAuthenticationCredentials(new AuthenticationCredentials(password));

@@ -19,10 +19,6 @@ package org.whispersystems.textsecuregcm.push;
 import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
-import com.google.android.gcm.server.Constants;
-import com.google.android.gcm.server.Message;
-import com.google.android.gcm.server.Result;
-import com.google.android.gcm.server.Sender;
 import org.whispersystems.textsecuregcm.entities.EncryptedOutgoingMessage;
 
 import com.baidu.yun.channel.auth.ChannelKeyPair;
@@ -34,94 +30,67 @@ import com.baidu.yun.channel.model.PushUnicastMessageResponse;
 import com.baidu.yun.core.log.YunLogEvent;
 import com.baidu.yun.core.log.YunLogHandler;
 
-import java.io.IOException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.codahale.metrics.MetricRegistry.name;
 
 public class FrontiaSender {
+	private final Logger logger = LoggerFactory.getLogger(FrontiaSender.class);
+	private final MetricRegistry metricRegistry = SharedMetricRegistries
+			.getOrCreate(org.whispersystems.textsecuregcm.util.Constants.METRICS_NAME);
+	private final Meter success = metricRegistry.meter(name(getClass(), "sent",
+			"success"));
+	private final Meter failure = metricRegistry.meter(name(getClass(), "sent",
+			"failure"));
 
-  private final MetricRegistry metricRegistry = SharedMetricRegistries.getOrCreate(org.whispersystems.textsecuregcm.util.Constants.METRICS_NAME);
-  private final Meter          success        = metricRegistry.meter(name(getClass(), "sent", "success"));
-  private final Meter          failure        = metricRegistry.meter(name(getClass(), "sent", "failure"));
+	// private final Sender sender;
 
-//  private final Sender sender;
+	private String apiKey = "y2CzhlKDrct8dbjKP2DFpHeo";
+	private String secretKey = "rhNPOm8G3Et0x2rIBDHTEpPptgCaS9L1";
+	private ChannelKeyPair pair = new ChannelKeyPair(apiKey, secretKey);
+	private BaiduChannelClient channelClient = new BaiduChannelClient(pair);
 
-  private String apiKey = "vL8vhak2sGljMZXOxpyYWUP0";
-  private String secretKey = "LfY74eWNbT5A51XGwHISh6Kibcu5u02s";
-  private ChannelKeyPair pair = new ChannelKeyPair(apiKey, secretKey);
-  private BaiduChannelClient channelClient = new BaiduChannelClient(pair);
+	public FrontiaSender() {
+	}
 
-  public FrontiaSender() {
-  }
+	public void sendMessage(long channelId, String userId,
+			EncryptedOutgoingMessage outgoingMessage)
+			throws NotPushRegisteredException, TransientPushFailureException {
+		logger.info("in FrontiaSender sendMessage", "");
+		channelClient.setChannelLogHandler(new YunLogHandler() {
+			@Override
+			public void onHandle(YunLogEvent event) {
+				System.out.println(event.getMessage());
+			}
+		});
 
-  public void sendMessage(long channelId, String userId, EncryptedOutgoingMessage outgoingMessage) 
-		  throws NotPushRegisteredException, TransientPushFailureException {
-	// 3. ��Ҫ�˽⽻��ϸ�ڣ���ע��YunLogHandler��
-      channelClient.setChannelLogHandler(new YunLogHandler() {
-          @Override
-          public void onHandle(YunLogEvent event) {
-              System.out.println(event.getMessage());
-          }
-      });
+		try {
+			PushUnicastMessageRequest request = new PushUnicastMessageRequest();
+			request.setDeviceType(3); // device_type => 1: web 2: pc 3:android
+										// 4:ios 5:wp
+			request.setChannelId(channelId);
+			request.setUserId(userId);
+			logger.warn("FrontiaSender sendMessage channelId:" + channelId + "  userId:"
+					+ userId);
 
-      try {
-	 // Message frontiaMessage = new Message.Builder().addData("type", "message")
-         //                                       .addData("message", outgoingMessage.serialize())
-         //                                       .build();
-          // 4. �������������
-          // �ֻ�˵�ChannelId�� �ֻ�˵�UserId�� ����1111111111111���棬�û����滻Ϊ�Լ���
-          PushUnicastMessageRequest request = new PushUnicastMessageRequest();
-          request.setDeviceType(3); // device_type => 1: web 2: pc 3:android
-                                    // 4:ios 5:wp
-          request.setChannelId(channelId);
-          request.setUserId(userId);
+			request.setMessage(outgoingMessage.serialize());
 
-          request.setMessage("Hello Channel");
+			PushUnicastMessageResponse response = channelClient
+					.pushUnicastMessage(request);
 
-          // 5. ����pushMessage�ӿ�
-          PushUnicastMessageResponse response = channelClient
-                  .pushUnicastMessage(request);
+			success.mark();
+			logger.warn("push amount : " + response.getSuccessAmount());
+		} catch (ChannelClientException e) {
+			failure.mark();
+			e.printStackTrace();
+			logger.warn(e.getMessage());
+		} catch (ChannelServerException e) {
+			failure.mark();
+			logger.warn(String.format(
+					"request_id: %d, error_code: %d, error_message: %s",
+					e.getRequestId(), e.getErrorCode(), e.getErrorMsg()));
+		}
 
-          // 6. ��֤���ͳɹ�
-          success.mark();
-          System.out.println("push amount : " + response.getSuccessAmount());
-      } catch (ChannelClientException e) {
-          // ����ͻ��˴����쳣
-    	  failure.mark();
-          e.printStackTrace();
-      } catch (ChannelServerException e) {
-          // �������˴����쳣
-    	  failure.mark();
-          System.out.println(String.format(
-                  "request_id: %d, error_code: %d, error_message: %s",
-                  e.getRequestId(), e.getErrorCode(), e.getErrorMsg()));
-      }
-
-  }
-  
-//  public String sendMessage(String gcmRegistrationId, EncryptedOutgoingMessage outgoingMessage)
-//      throws NotPushRegisteredException, TransientPushFailureException
-//  {
-//    try {
-//      Message gcmMessage = new Message.Builder().addData("type", "message")
-//                                                .addData("message", outgoingMessage.serialize())
-//                                                .build();
-//
-//      Result  result = sender.send(gcmMessage, gcmRegistrationId, 5);
-//
-//      if (result.getMessageId() != null) {
-//        success.mark();
-//        return result.getCanonicalRegistrationId();
-//      } else {
-//        failure.mark();
-//        if (result.getErrorCodeName().equals(Constants.ERROR_NOT_REGISTERED)) {
-//          throw new NotPushRegisteredException("Device no longer registered with GCM.");
-//        } else {
-//          throw new TransientPushFailureException("GCM Failed: " + result.getErrorCodeName());
-//        }
-//      }
-//    } catch (IOException e) {
-//      throw new TransientPushFailureException(e);
-//    }
-//  }
+	}
 }

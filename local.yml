@@ -72,3 +72,12 @@ database:
   # any properties specific to your JDBC driver:
   properties:
     charSet: UTF-8
+
+server:
+  applicationConnectors:
+  - type: http 
+    port: 8081
+  adminConnectors:
+  - type: http
+    port: 8082
+
