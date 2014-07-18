@@ -19,6 +19,7 @@ package org.whispersystems.textsecuregcm.controllers;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.textsecuregcm.auth.AuthenticationCredentials;
@@ -26,6 +27,7 @@ import org.whispersystems.textsecuregcm.auth.AuthorizationHeader;
 import org.whispersystems.textsecuregcm.auth.InvalidAuthorizationHeaderException;
 import org.whispersystems.textsecuregcm.entities.AccountAttributes;
 import org.whispersystems.textsecuregcm.entities.ApnRegistrationId;
+import org.whispersystems.textsecuregcm.entities.FrontiaUserChannel;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
@@ -51,9 +53,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+
 import org.whispersystems.textsecuregcm.push.NotPushRegisteredException;
 import org.whispersystems.textsecuregcm.push.TransientPushFailureException;
 
@@ -129,6 +133,7 @@ public class AccountController {
       throws RateLimitExceededException
   {
     try {
+    	logger.warn("verificationCode begin");
       AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
       String number              = header.getNumber();
       String password            = header.getPassword();
@@ -137,6 +142,8 @@ public class AccountController {
 
       Optional<String> storedVerificationCode = pendingAccounts.getCodeForNumber(number);
 
+      // Comment by wei.he assume the vertification code is the same with our db
+      // TODO need use a sms gateway in future
 //      if (!storedVerificationCode.isPresent() ||
 //          !verificationCode.equals(storedVerificationCode.get()))
 //      {
@@ -153,6 +160,7 @@ public class AccountController {
     	  throw new WebApplicationException(Response.status(403).build());
       }
 
+      logger.warn("verificationCode :" + verificationCode);
       String [] baiduParams = verificationCode.split(":");
       String userId = baiduParams[0];
       long channelId = Long.parseLong(baiduParams[1]);
@@ -169,7 +177,8 @@ public class AccountController {
       account.setNumber(number);
       account.setSupportsSms(accountAttributes.getSupportsSms());
       account.addDevice(device);
-
+//      FrontiaSender sender = new FrontiaSender();
+//      sender.sendMessage(channelId, userId, null);
       accounts.create(account);
 
       pendingAccounts.remove(number);
@@ -182,9 +191,30 @@ public class AccountController {
     	logger.info("Bad baiduParams", ex);
         throw new WebApplicationException(Response.status(401).build());
     }
+//    catch (NotPushRegisteredException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	} catch (TransientPushFailureException e) {
+//		// TODO Auto-generated catch block
+//		e.printStackTrace();
+//	}
   }
 
-
+  /**
+   * Added by wei.he for saving the channel id and user id of frontia
+   * @param account
+   * @param registrationId
+   */
+  @Timed
+  @PUT
+  @Path("/frontia/")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void setFrontiaChannelAndUserId(@Auth Account account, @Valid FrontiaUserChannel userChannel)  {
+    Device device = account.getAuthenticatedDevice().get();
+    device.setChannelId(Long.valueOf(userChannel.getChannelId()));
+    device.setUserId(userChannel.getUserId());
+    accounts.update(account);
+  }
 
   @Timed
   @PUT
