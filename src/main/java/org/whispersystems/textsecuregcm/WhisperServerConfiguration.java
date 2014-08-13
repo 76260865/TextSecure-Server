@@ -17,6 +17,7 @@
 package org.whispersystems.textsecuregcm;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.whispersystems.textsecuregcm.configuration.ApnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.FederationConfiguration;
 import org.whispersystems.textsecuregcm.configuration.GcmConfiguration;
@@ -27,6 +28,7 @@ import org.whispersystems.textsecuregcm.configuration.NexmoConfiguration;
 import org.whispersystems.textsecuregcm.configuration.RateLimitsConfiguration;
 import org.whispersystems.textsecuregcm.configuration.RedisConfiguration;
 import org.whispersystems.textsecuregcm.configuration.S3Configuration;
+import org.whispersystems.textsecuregcm.configuration.SwiftConfiguration;
 import org.whispersystems.textsecuregcm.configuration.TwilioConfiguration;
 import org.whispersystems.textsecuregcm.configuration.WebsocketConfiguration;
 
@@ -54,6 +56,11 @@ public class WhisperServerConfiguration extends Configuration {
   @Valid
   @JsonProperty
   private S3Configuration s3;
+  
+  @NotNull
+  @Valid
+  @JsonProperty
+  private SwiftConfiguration swift;
 
   @NotNull
   @Valid
@@ -145,4 +152,9 @@ public class WhisperServerConfiguration extends Configuration {
   public MetricsConfiguration getMetricsConfiguration() {
     return viz;
   }
+
+  public SwiftConfiguration getSwiftConfiguration() {
+	return swift;
+  }
+  
 }

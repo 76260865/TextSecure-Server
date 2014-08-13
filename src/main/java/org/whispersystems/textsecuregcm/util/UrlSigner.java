@@ -16,37 +16,32 @@
  */
 package org.whispersystems.textsecuregcm.util;
 
-import com.amazonaws.HttpMethod;
-import com.amazonaws.auth.AWSCredentials;
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import org.whispersystems.textsecuregcm.configuration.S3Configuration;
+import org.whispersystems.textsecuregcm.configuration.SwiftConfiguration;
 
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Date;
 
 public class UrlSigner {
-
+  private String host;
+  private String imagepath;
+  private String secret;
   private static final long   DURATION = 60 * 60 * 1000;
 
-  private final AWSCredentials credentials;
-  private final String bucket;
-
-  public UrlSigner(S3Configuration config) {
-    this.credentials = new BasicAWSCredentials(config.getAccessKey(), config.getAccessSecret());
-    this.bucket      = config.getAttachmentsBucket();
+  public UrlSigner(SwiftConfiguration config) {
+	  this.host = config.getHost();
+	  this.imagepath = config.getImagepath();
+	  this.secret = config.getSecret();
   }
 
-  public URL getPreSignedUrl(long attachmentId, HttpMethod method) {
-    AmazonS3                    client  = new AmazonS3Client(credentials);
-    GeneratePresignedUrlRequest request = new GeneratePresignedUrlRequest(bucket, String.valueOf(attachmentId), method);
-
-    request.setExpiration(new Date(System.currentTimeMillis() + DURATION));
-    request.setContentType("application/octet-stream");
-
-    return client.generatePresignedUrl(request);
+  public URL getPreSignedUrl(Long attachmentId, String method){
+	  Long epoch = System.currentTimeMillis()/1000+DURATION;
+	  try {
+		return new URL(host+imagepath+attachmentId.toString()+"?temp_url_sig="+HMACSHA1.HmacSHA1Encrypt(method+"\n"+epoch.toString()+"\n"+imagepath+attachmentId.toString(), secret)+"&temp_url_expires="+epoch.toString());
+	} catch (MalformedURLException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+	  return null;
   }
 
 }

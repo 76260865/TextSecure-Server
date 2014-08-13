@@ -16,7 +16,6 @@
  */
 package org.whispersystems.textsecuregcm.controllers;
 
-import com.amazonaws.HttpMethod;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Optional;
 import org.slf4j.Logger;
@@ -75,7 +74,7 @@ public class AttachmentController {
     }
 
     long attachmentId = generateAttachmentId();
-    URL  url          = urlSigner.getPreSignedUrl(attachmentId, HttpMethod.PUT);
+    URL  url          = urlSigner.getPreSignedUrl(attachmentId, "PUT");
 
     return new AttachmentDescriptor(attachmentId, url.toExternalForm());
 
@@ -92,11 +91,13 @@ public class AttachmentController {
   {
     try {
       if (!relay.isPresent()) {
-        return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, HttpMethod.GET));
+        return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, "GET"));
       } else {
-        return new AttachmentUri(federatedClientManager.getClient(relay.get()).getSignedAttachmentUri(attachmentId));
+    	  logger.info("---------------------\nrelay present"); 
+    	  return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, "GET"));  
+        //return new AttachmentUri(federatedClientManager.getClient(relay.get()).getSignedAttachmentUri(attachmentId));
       }
-    } catch (NoSuchPeerException e) {
+    } catch (Exception e) {
       logger.info("No such peer: " + relay);
       throw new WebApplicationException(Response.status(404).build());
     }

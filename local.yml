@@ -26,14 +26,17 @@ apn:
   key: 
 
 s3:
-  accessKey: 
-  accessSecret: 
+  accessKey:
+  accessSecret:
 
   # Name of the S3 bucket (needs to have been created)
   # for attachments to go.  Should be configured with
   # correct permissions.
   attachmentsBucket:
-
+swift:
+  host: http://118.122.92.227:8081
+  imagepath: /v1/AUTH_test/images/
+  secret: 123456
 memcache:
   servers: 127.0.0.1:11211
   user: 
@@ -76,7 +79,7 @@ database:
 server:
   applicationConnectors:
   - type: http 
-    port: 8081
+    port: 8083
   adminConnectors:
   - type: http
     port: 8082
