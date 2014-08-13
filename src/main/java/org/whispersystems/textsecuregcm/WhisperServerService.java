@@ -140,7 +140,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     TwilioSmsSender          twilioSmsSender        = new TwilioSmsSender(config.getTwilioConfiguration());
     Optional<NexmoSmsSender> nexmoSmsSender         = initializeNexmoSmsSender(config.getNexmoConfiguration());
     SmsSender                smsSender              = new SmsSender(twilioSmsSender, nexmoSmsSender, config.getTwilioConfiguration().isInternational());
-    UrlSigner                urlSigner              = new UrlSigner(config.getS3Configuration());
+    UrlSigner                urlSigner              = new UrlSigner(config.getSwiftConfiguration());
     PushSender               pushSender             = new PushSender(config.getGcmConfiguration(),
                                                                      config.getApnConfiguration(),
                                                                      storedMessages, pubSubManager,
