@@ -57,7 +57,7 @@ public class FrontiaSender {
 	public void sendMessage(long channelId, String userId,
 			EncryptedOutgoingMessage outgoingMessage)
 			throws NotPushRegisteredException, TransientPushFailureException {
-		logger.info("in FrontiaSender sendMessage", "");
+
 		channelClient.setChannelLogHandler(new YunLogHandler() {
 			@Override
 			public void onHandle(YunLogEvent event) {
@@ -75,6 +75,7 @@ public class FrontiaSender {
 					+ userId);
 
 			request.setMessage(outgoingMessage.serialize());
+			request.setMsgKey(System.currentTimeMillis()+"");
 
 			PushUnicastMessageResponse response = channelClient
 					.pushUnicastMessage(request);
