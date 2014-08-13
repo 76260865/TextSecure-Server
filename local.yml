@@ -34,7 +34,7 @@ s3:
   # correct permissions.
   attachmentsBucket:
 swift:
-  host: http://118.122.92.227:8081
+  host: http://118.122.92.227:8084
   imagepath: /v1/AUTH_test/images/
   secret: 123456
 memcache:
