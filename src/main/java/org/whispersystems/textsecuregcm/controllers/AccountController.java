@@ -29,6 +29,7 @@ import org.whispersystems.textsecuregcm.entities.AccountAttributes;
 import org.whispersystems.textsecuregcm.entities.ApnRegistrationId;
 import org.whispersystems.textsecuregcm.entities.FrontiaUserChannel;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
+import org.whispersystems.textsecuregcm.entities.GetuiModel;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
 import org.whispersystems.textsecuregcm.sms.TwilioSmsSender;
@@ -50,6 +51,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -133,7 +135,7 @@ public class AccountController {
       throws RateLimitExceededException
   {
     try {
-    	logger.warn("verificationCode begin");
+        logger.warn("verificationCode begin");
       AuthorizationHeader header = AuthorizationHeader.fromFullHeader(authorizationHeader);
       String number              = header.getNumber();
       String password            = header.getPassword();
@@ -155,23 +157,21 @@ public class AccountController {
       }
 
       if (Util.isEmpty(verificationCode)) {
-    	  //TODO: throw an exception
-    	  //verificationCode = "123156465:1545457478";
-    	  throw new WebApplicationException(Response.status(403).build());
+          //TODO: throw an exception
+          //verificationCode = "123156465:1545457478";
+          throw new WebApplicationException(Response.status(403).build());
       }
 
       logger.warn("verificationCode :" + verificationCode);
-      String [] baiduParams = verificationCode.split(":");
-      String userId = baiduParams[0];
-      long channelId = Long.parseLong(baiduParams[1]);
+      String getuicid = verificationCode;
+      
       Device device = new Device();
       device.setId(Device.MASTER_ID);
       device.setAuthenticationCredentials(new AuthenticationCredentials(password));
       device.setSignalingKey(accountAttributes.getSignalingKey());
       device.setFetchesMessages(accountAttributes.getFetchesMessages());
       device.setRegistrationId(accountAttributes.getRegistrationId());
-      device.setChannelId(channelId);
-      device.setUserId(userId);
+      device.setGetuicid(getuicid);
 
       Account account = new Account();
       account.setNumber(number);
@@ -188,18 +188,17 @@ public class AccountController {
       logger.info("Bad Authorization Header", e);
       throw new WebApplicationException(Response.status(401).build());
     } catch (NumberFormatException ex) {
-    	logger.info("Bad baiduParams", ex);
+        logger.info("Bad baiduParams", ex);
         throw new WebApplicationException(Response.status(401).build());
     }
 //    catch (NotPushRegisteredException e) {
-//		// TODO Auto-generated catch block
-//		e.printStackTrace();
-//	} catch (TransientPushFailureException e) {
-//		// TODO Auto-generated catch block
-//		e.printStackTrace();
-//	}
+//        // TODO Auto-generated catch block
+//        e.printStackTrace();
+//    } catch (TransientPushFailureException e) {
+//        // TODO Auto-generated catch block
+//        e.printStackTrace();
+//    }
   }
-
   /**
    * Added by wei.he for saving the channel id and user id of frontia
    * @param account
@@ -213,6 +212,22 @@ public class AccountController {
     Device device = account.getAuthenticatedDevice().get();
     device.setChannelId(Long.valueOf(userChannel.getChannelId()));
     device.setUserId(userChannel.getUserId());
+    accounts.update(account);
+  }
+  
+  
+  /**
+   * Added by chenzhen for saving the getui client id
+   * @param account
+   * @param registrationId
+   */
+  @Timed
+  @PUT
+  @Path("/getui/")
+  @Consumes(MediaType.APPLICATION_JSON)
+  public void setGetuiClientId(@Auth Account account, @Valid  GetuiModel gtclientid)  {
+    Device device = account.getAuthenticatedDevice().get();
+    device.setGetuicid(gtclientid.getClientId());
     accounts.update(account);
   }
 

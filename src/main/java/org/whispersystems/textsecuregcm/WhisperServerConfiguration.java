@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.whispersystems.textsecuregcm.configuration.ApnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.FederationConfiguration;
 import org.whispersystems.textsecuregcm.configuration.GcmConfiguration;
+import org.whispersystems.textsecuregcm.configuration.GetuiConfiguration;
 import org.whispersystems.textsecuregcm.configuration.GraphiteConfiguration;
 import org.whispersystems.textsecuregcm.configuration.MemcacheConfiguration;
 import org.whispersystems.textsecuregcm.configuration.MetricsConfiguration;
@@ -62,6 +63,10 @@ public class WhisperServerConfiguration extends Configuration {
   @JsonProperty
   private SwiftConfiguration swift;
 
+  @Valid
+  @JsonProperty
+  private GetuiConfiguration getui;
+  
   @NotNull
   @Valid
   @JsonProperty
@@ -154,7 +159,11 @@ public class WhisperServerConfiguration extends Configuration {
   }
 
   public SwiftConfiguration getSwiftConfiguration() {
-	return swift;
+    return swift;
   }
+
+public GetuiConfiguration getGetuiConfiguration() {
+    return getui;
+}
   
 }

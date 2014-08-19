@@ -28,20 +28,20 @@ public class UrlSigner {
   private static final long   DURATION = 60 * 60 * 1000;
 
   public UrlSigner(SwiftConfiguration config) {
-	  this.host = config.getHost();
-	  this.imagepath = config.getImagepath();
-	  this.secret = config.getSecret();
+      this.host = config.getHost();
+      this.imagepath = config.getImagepath();
+      this.secret = config.getSecret();
   }
 
   public URL getPreSignedUrl(Long attachmentId, String method){
-	  Long epoch = System.currentTimeMillis()/1000+DURATION;
-	  try {
-		return new URL(host+imagepath+attachmentId.toString()+"?temp_url_sig="+HMACSHA1.HmacSHA1Encrypt(method+"\n"+epoch.toString()+"\n"+imagepath+attachmentId.toString(), secret)+"&temp_url_expires="+epoch.toString());
-	} catch (MalformedURLException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	  return null;
+      Long epoch = System.currentTimeMillis()/1000+DURATION;
+      try {
+        return new URL(host+imagepath+attachmentId.toString()+"?temp_url_sig="+HMACSHA1.HmacSHA1Encrypt(method+"\n"+epoch.toString()+"\n"+imagepath+attachmentId.toString(), secret)+"&temp_url_expires="+epoch.toString());
+    } catch (MalformedURLException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+      return null;
   }
 
 }

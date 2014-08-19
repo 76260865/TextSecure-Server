@@ -18,6 +18,7 @@ package org.whispersystems.textsecuregcm.storage;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.whispersystems.textsecuregcm.auth.AuthenticationCredentials;
 import org.whispersystems.textsecuregcm.util.Util;
 
@@ -59,25 +60,17 @@ public class Device implements Serializable {
   private String userId;
   //added push properties for baidu service by wei.he end
   
+//-----------------------------------------start
+  @JsonProperty
+  private String getuicid;
+  //added push properties for getui service by chenzhen
+//-----------------------------------------end
+  
   public Device() {}
 
   public Device(long id, String authToken, String salt,
           String signalingKey, String gcmId, String apnId,
           boolean fetchesMessages, int registrationId)
-  {
-	this.id              = id;
-	this.authToken       = authToken;
-	this.salt            = salt;
-	this.signalingKey    = signalingKey;
-	this.gcmId           = gcmId;
-	this.apnId           = apnId;
-	this.fetchesMessages = fetchesMessages;
-	this.registrationId  = registrationId;
-  }
-  
-  public Device(long id, String authToken, String salt,
-                String signalingKey, String gcmId, String apnId,
-                boolean fetchesMessages, int registrationId, long channelId, String userId)
   {
     this.id              = id;
     this.authToken       = authToken;
@@ -87,11 +80,28 @@ public class Device implements Serializable {
     this.apnId           = apnId;
     this.fetchesMessages = fetchesMessages;
     this.registrationId  = registrationId;
+  }
+  
+
+
+  public Device(long id, String authToken, String salt, String signalingKey,
+        String gcmId, String apnId, boolean fetchesMessages,
+        int registrationId, long channelId, String userId, String getuicid) {
+    super();
+    this.id = id;
+    this.authToken = authToken;
+    this.salt = salt;
+    this.signalingKey = signalingKey;
+    this.gcmId = gcmId;
+    this.apnId = apnId;
+    this.fetchesMessages = fetchesMessages;
+    this.registrationId = registrationId;
     this.channelId = channelId;
     this.userId = userId;
-  }
+    this.getuicid = getuicid;
+}
 
-  public String getApnId() {
+public String getApnId() {
     return apnId;
   }
 
@@ -133,8 +143,8 @@ public class Device implements Serializable {
   }
 
   public boolean isActive() {
-	// added push properties for baidu service by wei.he
-    return fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId()) || (!Util.isEmpty(getChannelId()+"") && !Util.isEmpty(getUserId()));
+    // added push properties for baidu service by wei.he
+    return fetchesMessages || !Util.isEmpty(getApnId()) || !Util.isEmpty(getGcmId()) || (!Util.isEmpty(getGetuicid()));
   }
 
   public boolean getFetchesMessages() {
@@ -159,19 +169,32 @@ public class Device implements Serializable {
   
   //added push properties for baidu service by wei.he begin
   public long getChannelId() {
-	  return channelId;
+      return channelId;
   }
   
   public void setChannelId(long channelId) {
-	  this.channelId = channelId;
+      this.channelId = channelId;
   }
   
   public String getUserId() {
-	  return userId;
+      return userId;
   }
   
   public void setUserId(String userId) {
-	  this.userId = userId;
+      this.userId = userId;
   }
   //added push properties for baidu service by wei.he end
+
+//-----------------------------------------start
+//added push properties for baidu service by chenzhen 
+public String getGetuicid() {
+    return getuicid;
+}
+
+public void setGetuicid(String getuicid) {
+    this.getuicid = getuicid;
+}
+//-----------------------------------------end
+  
+  
 }

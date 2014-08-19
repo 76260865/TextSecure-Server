@@ -143,6 +143,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     UrlSigner                urlSigner              = new UrlSigner(config.getSwiftConfiguration());
     PushSender               pushSender             = new PushSender(config.getGcmConfiguration(),
                                                                      config.getApnConfiguration(),
+                                                                     config.getGetuiConfiguration(),
                                                                      storedMessages, pubSubManager,
                                                                      accountsManager);
 

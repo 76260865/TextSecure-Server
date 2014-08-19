@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.whispersystems.textsecuregcm.configuration.ApnConfiguration;
 import org.whispersystems.textsecuregcm.configuration.GcmConfiguration;
+import org.whispersystems.textsecuregcm.configuration.GetuiConfiguration;
 import org.whispersystems.textsecuregcm.entities.CryptoEncodingException;
 import org.whispersystems.textsecuregcm.entities.EncryptedOutgoingMessage;
 import org.whispersystems.textsecuregcm.entities.MessageProtos;
@@ -46,8 +47,12 @@ public class PushSender {
   // adde by wei.he for push message by baidu service
   private final FrontiaSender mFrontiaSender;
 
+  // adde by chenzhen for push message by getui service
+  private final GetuiSender getTuiSender;
+  
   public PushSender(GcmConfiguration gcmConfiguration,
                     ApnConfiguration apnConfiguration,
+                    GetuiConfiguration getuiConfiguration,
                     StoredMessages   storedMessages,
                     PubSubManager    pubSubManager,
                     AccountsManager  accounts)
@@ -60,6 +65,8 @@ public class PushSender {
                                          apnConfiguration.getCertificate(),
                                          apnConfiguration.getKey());
     mFrontiaSender = new FrontiaSender();
+    getTuiSender = new GetuiSender(getuiConfiguration);
+    
   }
 
   public void sendMessage(Account account, Device device, MessageProtos.OutgoingMessageSignal message)
@@ -83,6 +90,7 @@ public class PushSender {
     else if (device.getFetchesMessages()) sendWebSocketMessage(account, device, message);
     // added by wei.he for sending messgae by baidu service
     else if (device.getUserId() != null) sendFrontiaMessage(account, device, message);
+    else if (device.getGetuicid() != null) sendGetuiMessage( device, message);
     else                                  throw new NotPushRegisteredException("No delivery possible!");
   }
 
@@ -114,6 +122,14 @@ public class PushSender {
       //TODO need check if the user has registered the push service
   }
 
+  /**
+  * add by chenzhen for sending messgae by getui service
+  */
+  private void sendGetuiMessage(Device device, EncryptedOutgoingMessage outgoingMessage)
+      throws NotPushRegisteredException, TransientPushFailureException {
+      getTuiSender.sendMessage(device.getGetuicid(), outgoingMessage);
+      //TODO need check if the user has registered the push service
+  }
   private void sendApnMessage(Account account, Device device, EncryptedOutgoingMessage outgoingMessage)
       throws TransientPushFailureException, NotPushRegisteredException
   {

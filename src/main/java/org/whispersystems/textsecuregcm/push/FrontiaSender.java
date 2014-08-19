@@ -36,62 +36,62 @@ import org.slf4j.LoggerFactory;
 import static com.codahale.metrics.MetricRegistry.name;
 
 public class FrontiaSender {
-	private final Logger logger = LoggerFactory.getLogger(FrontiaSender.class);
-	private final MetricRegistry metricRegistry = SharedMetricRegistries
-			.getOrCreate(org.whispersystems.textsecuregcm.util.Constants.METRICS_NAME);
-	private final Meter success = metricRegistry.meter(name(getClass(), "sent",
-			"success"));
-	private final Meter failure = metricRegistry.meter(name(getClass(), "sent",
-			"failure"));
+    private final Logger logger = LoggerFactory.getLogger(FrontiaSender.class);
+    private final MetricRegistry metricRegistry = SharedMetricRegistries
+            .getOrCreate(org.whispersystems.textsecuregcm.util.Constants.METRICS_NAME);
+    private final Meter success = metricRegistry.meter(name(getClass(), "sent",
+            "success"));
+    private final Meter failure = metricRegistry.meter(name(getClass(), "sent",
+            "failure"));
 
-	// private final Sender sender;
+    // private final Sender sender;
 
-	private String apiKey = "y2CzhlKDrct8dbjKP2DFpHeo";
-	private String secretKey = "rhNPOm8G3Et0x2rIBDHTEpPptgCaS9L1";
-	private ChannelKeyPair pair = new ChannelKeyPair(apiKey, secretKey);
-	private BaiduChannelClient channelClient = new BaiduChannelClient(pair);
+    private String apiKey = "y2CzhlKDrct8dbjKP2DFpHeo";
+    private String secretKey = "rhNPOm8G3Et0x2rIBDHTEpPptgCaS9L1";
+    private ChannelKeyPair pair = new ChannelKeyPair(apiKey, secretKey);
+    private BaiduChannelClient channelClient = new BaiduChannelClient(pair);
 
-	public FrontiaSender() {
-	}
+    public FrontiaSender() {
+    }
 
-	public void sendMessage(long channelId, String userId,
-			EncryptedOutgoingMessage outgoingMessage)
-			throws NotPushRegisteredException, TransientPushFailureException {
+    public void sendMessage(long channelId, String userId,
+            EncryptedOutgoingMessage outgoingMessage)
+            throws NotPushRegisteredException, TransientPushFailureException {
 
-		channelClient.setChannelLogHandler(new YunLogHandler() {
-			@Override
-			public void onHandle(YunLogEvent event) {
-				System.out.println(event.getMessage());
-			}
-		});
+        channelClient.setChannelLogHandler(new YunLogHandler() {
+            @Override
+            public void onHandle(YunLogEvent event) {
+                System.out.println(event.getMessage());
+            }
+        });
 
-		try {
-			PushUnicastMessageRequest request = new PushUnicastMessageRequest();
-			request.setDeviceType(3); // device_type => 1: web 2: pc 3:android
-										// 4:ios 5:wp
-			request.setChannelId(channelId);
-			request.setUserId(userId);
-			logger.warn("FrontiaSender sendMessage channelId:" + channelId + "  userId:"
-					+ userId);
+        try {
+            PushUnicastMessageRequest request = new PushUnicastMessageRequest();
+            request.setDeviceType(3); // device_type => 1: web 2: pc 3:android
+                                        // 4:ios 5:wp
+            request.setChannelId(channelId);
+            request.setUserId(userId);
+            logger.warn("FrontiaSender sendMessage channelId:" + channelId + "  userId:"
+                    + userId);
 
-			request.setMessage(outgoingMessage.serialize());
-			request.setMsgKey(System.currentTimeMillis()+"");
+            request.setMessage(outgoingMessage.serialize());
+            request.setMsgKey(System.currentTimeMillis()+"");
 
-			PushUnicastMessageResponse response = channelClient
-					.pushUnicastMessage(request);
+            PushUnicastMessageResponse response = channelClient
+                    .pushUnicastMessage(request);
 
-			success.mark();
-			logger.warn("push amount : " + response.getSuccessAmount());
-		} catch (ChannelClientException e) {
-			failure.mark();
-			e.printStackTrace();
-			logger.warn(e.getMessage());
-		} catch (ChannelServerException e) {
-			failure.mark();
-			logger.warn(String.format(
-					"request_id: %d, error_code: %d, error_message: %s",
-					e.getRequestId(), e.getErrorCode(), e.getErrorMsg()));
-		}
+            success.mark();
+            logger.warn("push amount : " + response.getSuccessAmount());
+        } catch (ChannelClientException e) {
+            failure.mark();
+            e.printStackTrace();
+            logger.warn(e.getMessage());
+        } catch (ChannelServerException e) {
+            failure.mark();
+            logger.warn(String.format(
+                    "request_id: %d, error_code: %d, error_message: %s",
+                    e.getRequestId(), e.getErrorCode(), e.getErrorMsg()));
+        }
 
-	}
+    }
 }

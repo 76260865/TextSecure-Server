@@ -9,24 +9,24 @@ import javax.crypto.spec.SecretKeySpec;
 
 
 public class HMACSHA1 {
-	private static final String MAC_NAME = "HmacSHA1";    
+    private static final String MAC_NAME = "HmacSHA1";    
     private static final String ENCODING = "UTF-8";  
-	private static String ByteToHexString(byte[] bytearray)
-	{
-		StringBuilder stringBuilder = new StringBuilder("");  
-	    if (bytearray == null || bytearray.length <= 0) {  
-	        return null;  
-	    }  
-	    for (int i = 0; i < bytearray.length; i++) {  
-	        int v = bytearray[i] & 0xFF;  
-	        String hv = Integer.toHexString(v);  
-	        if (hv.length() < 2) {  
-	            stringBuilder.append(0);  
-	        }  
-	        stringBuilder.append(hv);  
-	    }  
-	    return stringBuilder.toString(); 
-	} 
+    private static String ByteToHexString(byte[] bytearray)
+    {
+        StringBuilder stringBuilder = new StringBuilder("");  
+        if (bytearray == null || bytearray.length <= 0) {  
+            return null;  
+        }  
+        for (int i = 0; i < bytearray.length; i++) {  
+            int v = bytearray[i] & 0xFF;  
+            String hv = Integer.toHexString(v);  
+            if (hv.length() < 2) {  
+                stringBuilder.append(0);  
+            }  
+            stringBuilder.append(hv);  
+        }  
+        return stringBuilder.toString(); 
+    } 
     public static String HmacSHA1Encrypt(String encryptText, String encryptKey)     
     {           
         try {
@@ -41,20 +41,20 @@ public class HMACSHA1 {
             byte[] text = encryptText.getBytes(ENCODING);    
             //完成 Mac 操作      
 
-			return ByteToHexString(mac.doFinal(text));
-		} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} 
+            return ByteToHexString(mac.doFinal(text));
+        } catch (InvalidKeyException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NoSuchAlgorithmException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IllegalStateException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } 
         return null;
     }
     

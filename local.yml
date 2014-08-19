@@ -37,6 +37,12 @@ swift:
   host: http://118.122.92.227:8084
   imagepath: /v1/AUTH_test/images/
   secret: 123456
+getui:
+  AppID: U0aGKAht697hlgeYs8Ra9
+  AppKey: z8yvCFO0p1A0B20wKflKf1
+  AppSecret: zIQHGwdYDPA47HHlfyqvA9
+  MasterSecret: y4KZlYUW5X6b44LtCCoHt
+  host: http://sdk.open.api.igexin.com/apiex.htm
 memcache:
   servers: 127.0.0.1:11211
   user: 

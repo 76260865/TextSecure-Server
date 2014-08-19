@@ -93,8 +93,8 @@ public class AttachmentController {
       if (!relay.isPresent()) {
         return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, "GET"));
       } else {
-    	  logger.info("---------------------\nrelay present"); 
-    	  return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, "GET"));  
+          logger.info("---------------------\nrelay present"); 
+          return new AttachmentUri(urlSigner.getPreSignedUrl(attachmentId, "GET"));  
         //return new AttachmentUri(federatedClientManager.getClient(relay.get()).getSignedAttachmentUri(attachmentId));
       }
     } catch (Exception e) {

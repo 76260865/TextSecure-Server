@@ -130,7 +130,32 @@
           <artifactId>bacc-api-lib</artifactId>
           <version>1.1.2</version>
     </dependency>
+    <dependency>
+          <groupId>gexin-rp-sdk-base</groupId>
+          <artifactId>gexin-rp-sdk-base</artifactId>
+          <version>2.0.0.9</version>
+    </dependency>
+    <dependency>
+          <groupId>gexin-rp-sdk-http</groupId>
+          <artifactId>gexin-rp-sdk-http</artifactId>
+          <version>3.0.0.2</version>
+    </dependency>
+    <dependency>
+          <groupId>gexin-rp-sdk-template</groupId>
+          <artifactId>gexin-rp-sdk-template</artifactId>
+          <version>2.0.0.6</version>
+    </dependency>
 
+    <dependency>  
+        <groupId>commons-httpclient</groupId>  
+        <artifactId>commons-httpclient</artifactId>  
+        <version>3.0.1</version>  
+    </dependency>
+    <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.0.3</version>
+    </dependency>
 
     </dependencies>
 
