@@ -20,10 +20,10 @@ gcm:
 # Optional. Only if iOS clients are supported.
 apn:
   # In PEM format.
-  certificate: 
+  certpath: apncertification/push.pem
   
   # In PEM format.
-  key: 
+  keypath: apncertification/push_key.pem
 
 s3:
   accessKey:

@@ -16,25 +16,57 @@
  */
 package org.whispersystems.textsecuregcm.configuration;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import org.hibernate.validator.constraints.NotEmpty;
+import java.io.File;
+import java.io.FileInputStream;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ApnConfiguration {
-
-  @NotEmpty
   @JsonProperty
+  private String certpath;
+  @JsonProperty
+  private String keypath;
+  
   private String certificate;
 
-  @NotEmpty
-  @JsonProperty
   private String key;
 
   public String getCertificate() {
+      if ( certificate == null)
+      {
+          certificate = readfromfile(certpath);
+      }
     return certificate;
   }
 
   public String getKey() {
+      if ( key == null)
+      {
+          key = readfromfile(keypath);
+      }
     return key;
+  }
+
+public String getCertpath() {
+    return certpath;
+}
+
+public String getKeypath() {
+    return keypath;
+}
+  private String readfromfile(String path)
+  {
+    try {
+      FileInputStream fis=new FileInputStream(new File(path));
+      byte[] b=new byte[fis.available()];
+      fis.read(b);
+      fis.close();
+      return new String(b);
+      
+    } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+    }
+    return null;
   }
 }
