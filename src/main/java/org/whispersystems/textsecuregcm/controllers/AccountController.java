@@ -26,14 +26,18 @@ import org.whispersystems.textsecuregcm.auth.AuthenticationCredentials;
 import org.whispersystems.textsecuregcm.auth.AuthorizationHeader;
 import org.whispersystems.textsecuregcm.auth.InvalidAuthorizationHeaderException;
 import org.whispersystems.textsecuregcm.entities.AccountAttributes;
+import org.whispersystems.textsecuregcm.entities.AccountInfo;
 import org.whispersystems.textsecuregcm.entities.ApnRegistrationId;
 import org.whispersystems.textsecuregcm.entities.FrontiaUserChannel;
 import org.whispersystems.textsecuregcm.entities.GcmRegistrationId;
 import org.whispersystems.textsecuregcm.entities.GetuiModel;
+import org.whispersystems.textsecuregcm.entities.IncomingMessage;
+import org.whispersystems.textsecuregcm.entities.IncomingMessageList;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
 import org.whispersystems.textsecuregcm.sms.TwilioSmsSender;
 import org.whispersystems.textsecuregcm.storage.Account;
+import org.whispersystems.textsecuregcm.storage.AccountInfoManage;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
 import org.whispersystems.textsecuregcm.storage.PendingAccountsManager;
@@ -59,6 +63,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
+import java.util.List;
+import java.util.Vector;
 
 import org.whispersystems.textsecuregcm.push.NotPushRegisteredException;
 import org.whispersystems.textsecuregcm.push.TransientPushFailureException;
@@ -70,21 +76,27 @@ public class AccountController {
 
   private final Logger logger = LoggerFactory.getLogger(AccountController.class);
 
-  private final PendingAccountsManager pendingAccounts;
-  private final AccountsManager        accounts;
-  private final RateLimiters           rateLimiters;
-  private final SmsSender              smsSender;
+    private final PendingAccountsManager pendingAccounts;
+    private final AccountsManager        accounts;
+    private final RateLimiters           rateLimiters;
+    private final SmsSender              smsSender;
+    private final AccountInfoManage      accountinfomanage;
+    private final MessageController      mc;
 
-  public AccountController(PendingAccountsManager pendingAccounts,
-                           AccountsManager accounts,
-                           RateLimiters rateLimiters,
-                           SmsSender smsSenderFactory)
-  {
-    this.pendingAccounts = pendingAccounts;
-    this.accounts        = accounts;
-    this.rateLimiters    = rateLimiters;
-    this.smsSender       = smsSenderFactory;
-  }
+    public AccountController(PendingAccountsManager pendingAccounts,
+            AccountsManager accounts,
+            RateLimiters rateLimiters,
+            SmsSender smsSenderFactory,
+            AccountInfoManage accountinfo,
+            MessageController mc)
+    {
+        this.pendingAccounts   = pendingAccounts;
+        this.accounts          = accounts;
+        this.rateLimiters      = rateLimiters;
+        this.smsSender         = smsSenderFactory;
+        this.accountinfomanage = accountinfo;
+        this.mc = mc;
+    }
 
   @Timed
   @GET
@@ -289,4 +301,95 @@ public class AccountController {
       throw new AssertionError(e);
     }
   }
+
+    @Timed
+    @PUT
+    @Path("/code/saveorupdate/{number}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void saveOrUpdateAccountInfo(@Auth Account account,@PathParam("number") String number,@Valid AccountInfo info)
+            throws RateLimitExceededException
+    {
+        AccountInfo dbinfo = this.accountinfomanage.getbynumber(number);
+        if (dbinfo==null)
+        {
+            this.accountinfomanage.insert(info);
+        }
+        else{
+            if (info.getNickname() !=null )
+            {
+                dbinfo.setNickname(info.getNickname());
+            }
+            else if (info.getGender() != null)
+            {
+                dbinfo.setGender(info.getGender());
+            }
+            else if (info.getAge() != null)
+            {
+                dbinfo.setAge(info.getAge());
+            }
+            else if (info.getWork() != null)
+            {
+                dbinfo.setWork(info.getWork());
+            }
+            else if (info.getImageattachmentid() != null)
+            {
+                dbinfo.setImageattachmentid(info.getImageattachmentid());
+            }
+            else if (info.getSign() != null)
+            {
+                dbinfo.setSign(info.getSign());
+            }
+
+            this.accountinfomanage.updatebynumber(dbinfo);
+        }
+        
+        try {
+			List<String> friends = info.getFriends();
+			if(friends!=null && !friends.isEmpty())
+			{
+				for (String tempnumber: friends)
+				{
+					if (tempnumber!=null&&!tempnumber.isEmpty())
+					{
+						IncomingMessageList mlist = new IncomingMessageList();
+						List<IncomingMessage> messages = new Vector<IncomingMessage>();
+						IncomingMessage message = new IncomingMessage();
+						message.setBody("");
+						message.setDestination(tempnumber);
+						message.setType(5);
+						message.setTimestamp(System.currentTimeMillis());
+						messages.add(message);
+						mlist.setMessages(messages);
+			            mc.sendLocalMessage(account, tempnumber, mlist);
+					}
+				}
+				
+			}
+		} catch (NoSuchUserException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (MismatchedDevicesException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (StaleDevicesException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+    }
+    
+    @Timed
+    @GET
+    @Path("/code/get/{number}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public AccountInfo getAccountInfo(@Auth Account account,@PathParam("number") String number)
+            throws RateLimitExceededException
+    {
+        final AccountInfo info = this.accountinfomanage.getbynumber(number);
+        return info;
+    }
+
 }

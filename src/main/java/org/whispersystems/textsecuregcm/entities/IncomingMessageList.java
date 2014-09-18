@@ -45,4 +45,9 @@ public class IncomingMessageList {
   public void setRelay(String relay) {
     this.relay = relay;
   }
+
+public void setMessages(List<IncomingMessage> messages) {
+	this.messages = messages;
+}
+  
 }

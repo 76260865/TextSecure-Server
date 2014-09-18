@@ -2,15 +2,18 @@ package org.whispersystems.textsecuregcm.tests.controllers;
 
 import com.google.common.base.Optional;
 import com.sun.jersey.api.client.ClientResponse;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.whispersystems.textsecuregcm.controllers.AccountController;
+import org.whispersystems.textsecuregcm.controllers.MessageController;
 import org.whispersystems.textsecuregcm.entities.AccountAttributes;
 import org.whispersystems.textsecuregcm.limits.RateLimiter;
 import org.whispersystems.textsecuregcm.limits.RateLimiters;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
 import org.whispersystems.textsecuregcm.storage.Account;
+import org.whispersystems.textsecuregcm.storage.AccountInfoManage;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.PendingAccountsManager;
 import org.whispersystems.textsecuregcm.tests.util.AuthHelper;
@@ -31,14 +34,17 @@ public class AccountControllerTest {
   private RateLimiters           rateLimiters           = mock(RateLimiters.class          );
   private RateLimiter            rateLimiter            = mock(RateLimiter.class           );
   private SmsSender              smsSender              = mock(SmsSender.class             );
-
+  private AccountInfoManage      infomanage             = mock(AccountInfoManage.class             );
+  private MessageController      mc             = mock(MessageController.class             );
   @Rule
   public final ResourceTestRule resources = ResourceTestRule.builder()
                                                             .addProvider(AuthHelper.getAuthenticator())
                                                             .addResource(new AccountController(pendingAccountsManager,
                                                                                                accountsManager,
                                                                                                rateLimiters,
-                                                                                               smsSender))
+                                                                                               smsSender,
+                                                                                               infomanage,
+                                                                                               mc))
                                                             .build();
 
 

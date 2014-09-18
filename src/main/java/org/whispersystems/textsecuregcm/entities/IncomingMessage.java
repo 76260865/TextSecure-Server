@@ -67,4 +67,26 @@ public class IncomingMessage {
   public int getDestinationRegistrationId() {
     return destinationRegistrationId;
   }
+
+public long getTimestamp() {
+	return timestamp;
+}
+
+public void setTimestamp(long timestamp) {
+	this.timestamp = timestamp;
+}
+
+public void setType(int type) {
+	this.type = type;
+}
+
+public void setDestination(String destination) {
+	this.destination = destination;
+}
+
+public void setBody(String body) {
+	this.body = body;
+}
+  
+  
 }

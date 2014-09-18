@@ -128,7 +128,7 @@ public class MessageController {
     }
   }
 
-  private void sendLocalMessage(Account source,
+  public void sendLocalMessage(Account source,
                                 String destinationName,
                                 IncomingMessageList messages)
       throws NoSuchUserException, MismatchedDevicesException, IOException, StaleDevicesException

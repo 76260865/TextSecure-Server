@@ -20,7 +20,9 @@ import com.codahale.metrics.SharedMetricRegistries;
 import com.codahale.metrics.graphite.GraphiteReporter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.google.common.base.Optional;
+
 import net.spy.memcached.MemcachedClient;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.eclipse.jetty.servlets.CrossOriginFilter;
 import org.skife.jdbi.v2.DBI;
@@ -53,6 +55,7 @@ import org.whispersystems.textsecuregcm.push.PushSender;
 import org.whispersystems.textsecuregcm.sms.NexmoSmsSender;
 import org.whispersystems.textsecuregcm.sms.SmsSender;
 import org.whispersystems.textsecuregcm.sms.TwilioSmsSender;
+import org.whispersystems.textsecuregcm.storage.AccountInfoManage;
 import org.whispersystems.textsecuregcm.storage.Accounts;
 import org.whispersystems.textsecuregcm.storage.AccountsManager;
 import org.whispersystems.textsecuregcm.storage.Device;
@@ -72,6 +75,7 @@ import org.whispersystems.textsecuregcm.workers.DirectoryCommand;
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
 import javax.servlet.ServletRegistration;
+
 import java.security.Security;
 import java.util.EnumSet;
 import java.util.concurrent.TimeUnit;
@@ -118,10 +122,12 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
     DBIFactory dbiFactory = new DBIFactory();
     DBI        jdbi       = dbiFactory.build(environment, config.getDataSourceFactory(), "postgresql");
 
-    Accounts        accounts        = jdbi.onDemand(Accounts.class);
-    PendingAccounts pendingAccounts = jdbi.onDemand(PendingAccounts.class);
-    PendingDevices  pendingDevices  = jdbi.onDemand(PendingDevices.class);
-    Keys            keys            = jdbi.onDemand(Keys.class);
+    Accounts           accounts        = jdbi.onDemand(Accounts.class);
+    PendingAccounts    pendingAccounts = jdbi.onDemand(PendingAccounts.class);
+    PendingDevices     pendingDevices  = jdbi.onDemand(PendingDevices.class);
+    Keys               keys            = jdbi.onDemand(Keys.class);
+    AccountInfoManage  infomanage      = jdbi.onDemand(AccountInfoManage.class);
+    
 
     MemcachedClient memcachedClient = new MemcachedClientFactory(config.getMemcacheConfiguration()).getClient();
     JedisPool       redisClient     = new RedisClientFactory(config.getRedisConfiguration()).getRedisClientPool();
@@ -156,7 +162,7 @@ public class WhisperServerService extends Application<WhisperServerConfiguration
                                                                deviceAuthenticator,
                                                                Device.class, "WhisperServer"));
 
-    environment.jersey().register(new AccountController(pendingAccountsManager, accountsManager, rateLimiters, smsSender));
+    environment.jersey().register(new AccountController(pendingAccountsManager, accountsManager, rateLimiters, smsSender,infomanage,messageController));
     environment.jersey().register(new DeviceController(pendingDevicesManager, accountsManager, rateLimiters));
     environment.jersey().register(new DirectoryController(rateLimiters, directory));
     environment.jersey().register(new FederationController(accountsManager, attachmentController, keysController, messageController));
